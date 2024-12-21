@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vending Machine</title>
+</head>
+<body>
+    <div id="vending-container">
+        <h1>Elige un producto</h1>
+        <div id="items-list"></div>
+        <button id="close-btn">Cerrar</button>
+    </div>
+
+    <script>
+        window.addEventListener('message', function (event) {
+            var data = event.data;
+
+            if (data.action == 'open') {
+                document.getElementById('vending-container').style.display = 'block';
+                var itemsList = document.getElementById('items-list');
+                itemsList.innerHTML = '';
+
+                data.items.forEach(function (item) {
+                    var itemDiv = document.createElement('div');
+                    itemDiv.textContent = item.label + ' - $' + item.price;
+                    itemDiv.onclick = function () {
+                        fetch('https://muhaddil-machines/selectItem', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                itemName: item.name,
+                                itemPrice: item.price,
+                                machineName: data.machineName
+                            })
+                        }).then(res => res.json());
+                    };
+                    itemsList.appendChild(itemDiv);
+                });
+            } else if (data.action == 'close') {
+                document.getElementById('vending-container').style.display = 'none';
+            }
+        });
+
+        document.getElementById('close-btn').onclick = function () {
+            fetch('https://muhaddil-machines/close', {
+                method: 'POST',
+            });
+        };
+    </script>
+</body>
+</html>

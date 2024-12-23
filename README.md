@@ -54,3 +54,8 @@ Interact with news sellers to buy newspapers. The available items and their pric
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+<p>
+  <img src="https://i.ibb.co/zPZpZmR/imagen.png" width="400" style="display:inline-block; margin-right: 10px;" />
+  <img src="https://i.ibb.co/BP9Cppn/imagen.png" width="400" style="display:inline-block;" />
+</p>

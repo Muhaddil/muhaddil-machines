@@ -1,7 +1,7 @@
-local buying = false
-local LastWaterCoolerUse = 0
-local TimeoutDuration = Config.WaterCoolerTimeout * 1000
-local DrinkCount = 0
+local buying = false -- Variable to prevent multiple purchases
+local LastWaterCoolerUse = 0 -- Variable to prevent multiple uses of the water cooler
+local TimeoutDuration = Config.WaterCoolerTimeout * 1000 -- Timeout duration for water coolers in milliseconds
+local DrinkCount = 0 -- Variable to count the number of drinks
 
 if Config.Framework == "esx" then
     ESX = exports['es_extended']:getSharedObject()
@@ -11,13 +11,13 @@ else
     ESX = exports['es_extended']:getSharedObject()
 end
 
-function DebugPrint(...)
+function DebugPrint(...) -- Debug print function
     if Config.DebugMode then
         print(...)
     end
 end
 
-function Notify(msgtitle, msg, time, type2)
+function Notify(msgtitle, msg, time, type2) -- Notification function
     if Config.UseOXNotifications then
         lib.notify({
             title = msgtitle,
@@ -277,7 +277,6 @@ local function standAnimation(entity)
     buying = false
 end
 
-
 local function showQuantityDialogStands(item, standName, entity)
     local input = lib.inputDialog("Selecciona la cantidad", {
         { type = 'number', label = 'Cantidad', min = 1, max = Config.InputMaxValue, default = 1 }
@@ -325,27 +324,31 @@ local function standMenu(standName, entity, items)
     lib.showContext('stand_menu_' .. standName)
 end
 
-local function standAnimation(entity)
+local function newsAnimation(entity)
     local ped = PlayerPedId()
     local position = GetOffsetFromEntityInWorldCoords(entity, 0.0, -0.97, 0.05)
     local heading = GetEntityHeading(entity)
     buying = true
 
     TaskTurnPedToFaceEntity(ped, entity, -1)
-    if not IsEntityAtCoord(ped, position.x, position.y, position.z, 0.1, 0.0, 0.1, false, true, 0) then
+    if not IsEntityAtCoord(ped, position.x, position.y, position.z, 0.0, 0.0, 0.0, false, true, 0) then
         TaskGoStraightToCoord(ped, position.x, position.y, position.z, 1.0, 20000, heading, 0.1)
         Citizen.Wait(1000)
     end
     TaskTurnPedToFaceEntity(ped, entity, -1)
     Citizen.Wait(1000)
 
-    playAnimation(ped, Config.Animations.stand[1], Config.Animations.stand[2])
-    Citizen.Wait(1000)
+    loadAnimDict(Config.Animations.newsSellers[1])
+    TaskPlayAnim(ped, Config.Animations.newsSellers[1], Config.Animations.newsSellers[2], 8.0, 5.0, -1, 1, 1, false, false, false)
+    Citizen.Wait(2500)
+    ClearPedTasks(ped)
+    RemoveAnimDict(Config.Animations.newsSellers[1])
 
     ClearPedSecondaryTask(ped)
 
     buying = false
 end
+
 
 local function showQuantityDialogNews(item, newsName, entity)
     local input = lib.inputDialog("Selecciona la cantidad", {
@@ -360,7 +363,7 @@ local function showQuantityDialogNews(item, newsName, entity)
         if buying then return end
         buying = true
 
-        standAnimation(entity)
+        newsAnimation(entity)
 
         TriggerServerEvent('muhaddil-machines:buy', 'news', newsName, item.name, cantidad)
     else

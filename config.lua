@@ -1,30 +1,36 @@
 Config = Config or {}
 
-Config.DebugMode = true
-Config.Framework = 'esx'
-Config.UseOXNotifications = true
+Config.DebugMode = true -- Enable debug mode
+Config.Framework = 'esx' -- 'esx' or 'qb'
+Config.UseOXNotifications = true -- Use OX Notifications or framework notifications
+Config.Inventory = 'ox'-- 'qs', 'ox' or leave blank
+Config.NewQBInventory = false -- If you're using the new QB Inventory
 
-Config.ThirstRemoval = 150000 -- (WaterCooler)
-Config.WaterCoolerTimeout = 30
-Config.VisibleProp = false
-Config.InputMaxValue = 10 --
+Config.ThirstRemoval = 150000 -- Amount of thirst removed by water coolers
+Config.WaterCoolerTimeout = 30 -- Timeout duration for water coolers in seconds
+Config.VisibleProp = false -- Show the prop when buying a drink
+Config.InputMaxValue = 10 -- Maximum value for the input
 Config.KillPlayerOnExcess = true -- Enable one of the two (WaterCooler)
 Config.ShowWaitNotification = false -- Enable one of the two (WaterCooler)
 Config.MaxDrinksBeforeKill = 3 -- (WaterCooler)
 Config.CountDrinksPlace = 'before' -- 'before' or 'after', it varies in the result of the Config.MaxDrinksBeforeKill (WaterCooler)
 
-Config.Animations = {
-    stand = {
+Config.Animations = { -- Animations for the vending machines
+    stand = { -- Stand animations
         "special_ped@baygor@monologue_2@monologue_2h",
         "you_can_ignore_me_7"
     },
-    sodamachines = {
+    sodamachines = { -- Soda machine animations
         "mini@sprunk@first_person",
         "plyr_buy_drink_pt1"
     },
+    newsSellers = { -- News seller animations
+        "anim@amb@nightclub@mini@drinking@drinking_shots@ped_c@normal",
+        "pickup"
+    },
 }
 
-Config.machines = {
+Config.machines = { -- Vending machines
     {
         model = 'prop_vend_soda_02',
         items = {
@@ -138,7 +144,6 @@ Config.machines = {
                 price = 40
             }
         },
-        offset = vec3(0, 0, 0)
     },
 
     {
@@ -166,12 +171,12 @@ Config.machines = {
     }
 }
 
-Config.WaterCoolers = {
+Config.WaterCoolers = { -- Water coolers
     {model = 'prop_watercooler_dark',},
     {model = 'prop_watercooler',},
 }
 
-Config.Stands = {
+Config.Stands = { -- Stands
     {
         model = 'prop_hotdogstand_01',
         items = {
@@ -218,11 +223,67 @@ Config.Stands = {
             },
         },
     },
+    {
+        model = 'prop_fruitstand_b',
+        items = {
+            {
+                name = "apple",
+                label = 'Manzana ($%price%)',
+                icon = 'fa fa-apple',
+                price = 10
+            },
+            {
+                name = "banana",
+                label = 'Banana ($%price%)',
+                icon = 'fa fa-banana',
+                price = 12
+            },
+        },
+    },
+    {
+        model = 'prop_tool_bench02',
+        items = {
+            {
+                name = "repairkit",
+                label = 'Kit de Reparación ($%price%)',
+                icon = 'fa fa-wrench',
+                price = 1000
+            },
+            {
+                name = "bodykit",
+                label = 'Body Kit ($%price%)',
+                icon = 'fa fa-screwdriver',
+                price = 250
+            },
+        },
+    },
 }
 
-Config.NewsSellers = {
+Config.NewsSellers = { -- News sellers
     {
         model = 'prop_news_disp_06a',
+        items = {
+            {
+                name = "newspaper",
+                label = 'Periódico ($%price%)',
+                icon = 'fa fa-newspaper',
+                price = 30
+            },
+        },
+    },
+    {
+        model = 'prop_news_disp_01a',
+        items = {
+            {
+                name = "newspaper",
+                label = 'Periódico ($%price%)',
+                icon = 'fa fa-newspaper',
+                price = 30
+            },
+        },
+    },
+    {
+        model = 'prop_news_disp_03a',
         items = {
             {
                 name = "newspaper",

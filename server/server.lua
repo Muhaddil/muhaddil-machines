@@ -6,7 +6,7 @@ else
     ESX = exports['es_extended']:getSharedObject()
 end
 
-local function getPlayerObject(src)
+local function getPlayerObject(src) -- Get the player object
     if Config.Framework == 'qb' then
         return QBCore.Functions.GetPlayer(src)
     elseif Config.Framework == 'esx' then
@@ -20,7 +20,7 @@ function DebugPrint(...)
     end
 end
 
-local function TakeMoney(playerObject, method, amount)
+local function TakeMoney(playerObject, method, amount) -- Take money from the player
     amount = tonumber(amount)
 
     if Config.Framework == 'qb' then
@@ -42,16 +42,31 @@ local function TakeMoney(playerObject, method, amount)
     return false
 end
 
-local function giveItem(src, playerObject, item, amount)
+local function giveItem(src, playerObject, item, amount) -- Give the item to the player
     if Config.Framework == 'qb' then
-        return playerObject.Functions.AddItem(item.name, amount, false)
+        if Config.Inventory == 'qs' then
+            exports['qs-inventory']:AddItem(src, item.name, amount)
+        elseif Config.Inventory == 'ox' then
+            exports.ox_inventory:AddItem(src, item.name, amount)
+        else
+            if Config.NewQBInventory then
+                exports['qb-inventory']:AddItem(source, item.name, amount, false, false, 'Machines')
+            else
+                playerObject.Functions.AddItem(item.name, amount)
+            end
+        end
     elseif Config.Framework == 'esx' then
-        DebugPrint('Give item ' .. item.name .. ' to player ' .. src)
-        return exports.ox_inventory:AddItem(src, item.name, amount)
+        if Config.Inventory == 'qs' then
+            exports['qs-inventory']:AddItem(src, item.name, amount)
+        elseif Config.Inventory == 'ox' then
+            exports.ox_inventory:AddItem(src, item.name, amount)
+        else
+            playerObject.addInventoryItem(item.name, amount)
+        end
     end
 end
 
-local function handlePurchase(src, player, item, machineName, totalPrice, cantidad)
+local function handlePurchase(src, player, item, machineName, totalPrice, cantidad) -- Handle the purchase
     local success = false
 
     if TakeMoney(player, 'cash', totalPrice) then
@@ -67,7 +82,7 @@ local function handlePurchase(src, player, item, machineName, totalPrice, cantid
     end
 end
 
-local function findItemInSource(sourceData, itemName)
+local function findItemInSource(sourceData, itemName) -- Find the item in the source data
     for _, item in ipairs(sourceData.items) do
         if item.name == itemName then
             return item
@@ -76,7 +91,7 @@ local function findItemInSource(sourceData, itemName)
     return nil
 end
 
-RegisterNetEvent('muhaddil-machines:buy', function(sourceType, sourceName, itemName, cantidad)
+RegisterNetEvent('muhaddil-machines:buy', function(sourceType, sourceName, itemName, cantidad) -- Event for buying the item
     local src = source
     local player = getPlayerObject(src)
 
@@ -101,7 +116,29 @@ RegisterNetEvent('muhaddil-machines:buy', function(sourceType, sourceName, itemN
     end
 end)
 
-RegisterServerEvent('muhaddil-machines:RemoveThirst')
+RegisterServerEvent('muhaddil-machines:RemoveThirst') -- Event for the watercoolers to remove thirst
 AddEventHandler('muhaddil-machines:RemoveThirst', function()
-	TriggerClientEvent('esx_status:add', source, 'thirst', Config.ThirstRemoval)
+    local src = source
+    
+    if Config.Framework == 'qb' then
+        local player = QBCore.Functions.GetPlayer(src)
+        if player then
+            local currentThirst = player.PlayerData.metadata['thirst'] or 0
+            if currentThirst < 100 then
+                local newThirst = math.min(currentThirst + Config.ThirstRemoval, 100)
+                player.Functions.SetMetaData('thirst', newThirst)
+                
+                TriggerClientEvent('hud:client:UpdateNeeds', src, player.PlayerData.metadata.hunger or 50, newThirst)
+            else
+                print("[Info] El jugador " .. src .. " ya tiene la sed máxima (100).")
+            end
+        else
+            print("[Error] No se pudo obtener el jugador para src: " .. tostring(src))
+        end
+
+    elseif Config.Framework == 'esx' then
+        TriggerClientEvent('esx_status:add', src, 'thirst', Config.ThirstRemoval)
+    else
+        print("[Error] Configuración de framework no válida.")
+    end
 end)

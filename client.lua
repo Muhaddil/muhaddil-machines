@@ -1,12 +1,14 @@
-local buying = false -- Variable to prevent multiple purchases
-local LastWaterCoolerUse = 0 -- Variable to prevent multiple uses of the water cooler
+local buying = false                                     -- Variable to prevent multiple purchases
+local LastWaterCoolerUse = 0                             -- Variable to prevent multiple uses of the water cooler
 local TimeoutDuration = Config.WaterCoolerTimeout * 1000 -- Timeout duration for water coolers in milliseconds
-local DrinkCount = 0 -- Variable to count the number of drinks
+local DrinkCount = 0                                     -- Variable to count the number of drinks
 
 if Config.Framework == "esx" then
     ESX = exports['es_extended']:getSharedObject()
 elseif Config.Framework == "qb" then
     QBCore = exports['qb-core']:GetCoreObject()
+elseif Config.Framework == "ox" then
+    Ox = require '@ox_core.lib.init'
 else
     ESX = exports['es_extended']:getSharedObject()
 end
@@ -38,6 +40,21 @@ function Notify(msgtitle, msg, time, type2) -- Notification function
             QBCore.Functions.Notify(msg, type2, time)
         elseif Config.Framework == 'esx' then
             TriggerEvent('esx:showNotification', msg, type2, time)
+        elseif Config.Framework == 'ox' then
+            lib.notify({
+                title = msgtitle,
+                description = msg,
+                showDuration = true,
+                type = type2,
+                style = {
+                    backgroundColor = 'rgba(0, 0, 0, 0.75)',
+                    color = 'rgba(255, 255, 255, 1)',
+                    ['.description'] = {
+                        color = '#909296',
+                        backgroundColor = 'transparent'
+                    }
+                }
+            })
         end
     end
 end
@@ -46,7 +63,6 @@ RegisterNetEvent("muhaddil-machines:Notify")
 AddEventHandler("muhaddil-machines:Notify", function(msgtitle, msg, time, type)
     Notify(msgtitle, msg, time, type)
 end)
-
 
 local function loadAnimDict(animDict)
     RequestAnimDict(animDict)
@@ -339,7 +355,8 @@ local function newsAnimation(entity)
     Citizen.Wait(1000)
 
     loadAnimDict(Config.Animations.newsSellers[1])
-    TaskPlayAnim(ped, Config.Animations.newsSellers[1], Config.Animations.newsSellers[2], 8.0, 5.0, -1, 1, 1, false, false, false)
+    TaskPlayAnim(ped, Config.Animations.newsSellers[1], Config.Animations.newsSellers[2], 8.0, 5.0, -1, 1, 1, false,
+        false, false)
     Citizen.Wait(2500)
     ClearPedTasks(ped)
     RemoveAnimDict(Config.Animations.newsSellers[1])
@@ -397,7 +414,7 @@ local function newsMenu(newsName, entity, items)
     lib.showContext('news_menu_' .. newsName)
 end
 
-local function setupTargeting(targetSystem)
+local function setupTargeting()
     for vendingMachineName, data in pairs(Config.machines) do
         local options = {
             {

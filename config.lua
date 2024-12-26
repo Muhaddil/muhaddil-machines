@@ -1,7 +1,7 @@
 Config = Config or {}
 
 Config.DebugMode = true -- Enable debug mode
-Config.Framework = 'esx' -- 'esx' or 'qb'
+Config.Framework = 'ox' -- 'esx', 'qb' or 'ox'
 Config.UseOXNotifications = true -- Use OX Notifications or framework notifications
 Config.Inventory = 'ox'-- 'qs', 'ox' or leave blank
 Config.NewQBInventory = false -- If you're using the new QB Inventory

@@ -2,6 +2,8 @@ if Config.Framework == "esx" then
     ESX = exports['es_extended']:getSharedObject()
 elseif Config.Framework == "qb" then
     QBCore = exports['qb-core']:GetCoreObject()
+elseif Config.Framework == "ox" then
+    Ox = require '@ox_core.lib.init'
 else
     ESX = exports['es_extended']:getSharedObject()
 end
@@ -11,6 +13,8 @@ local function getPlayerObject(src) -- Get the player object
         return QBCore.Functions.GetPlayer(src)
     elseif Config.Framework == 'esx' then
         return ESX.GetPlayerFromId(src)
+    elseif Config.Framework == 'ox' then
+        return Ox.GetPlayer(src)
     end
 end
 
@@ -36,6 +40,11 @@ local function TakeMoney(playerObject, method, amount) -- Take money from the pl
                 playerObject.removeAccountMoney('bank', amount)
                 return true
             end
+        end
+    elseif Config.Framework == 'ox' then
+        if exports.ox_inventory:GetItemCount(source, 'money') >= amount then
+            exports.ox_inventory:RemoveItem(source, 'money', amount)
+            return true
         end
     end
 
@@ -63,6 +72,8 @@ local function giveItem(src, playerObject, item, amount) -- Give the item to the
         else
             playerObject.addInventoryItem(item.name, amount)
         end
+    elseif Config.Framework == 'ox' then
+        exports.ox_inventory:AddItem(source, item.name, amount)
     end
 end
 
@@ -91,35 +102,36 @@ local function findItemInSource(sourceData, itemName) -- Find the item in the so
     return nil
 end
 
-RegisterNetEvent('muhaddil-machines:buy', function(sourceType, sourceName, itemName, cantidad) -- Event for buying the item
-    local src = source
-    local player = getPlayerObject(src)
+RegisterNetEvent('muhaddil-machines:buy',
+    function(sourceType, sourceName, itemName, cantidad) -- Event for buying the item
+        local src = source
+        local player = getPlayerObject(src)
 
-    local sourceData
-    if sourceType == 'machine' then
-        sourceData = Config.machines[sourceName]
-    elseif sourceType == 'stand' then
-        sourceData = Config.Stands[sourceName]
-    elseif sourceType == 'news' then
-        sourceData = Config.NewsSellers[sourceName]
-    else
-        TriggerClientEvent('muhaddil-machines:Notify', src, '', 'El tipo de origen no es válido.', 'error')
-        return
-    end
+        local sourceData
+        if sourceType == 'machine' then
+            sourceData = Config.machines[sourceName]
+        elseif sourceType == 'stand' then
+            sourceData = Config.Stands[sourceName]
+        elseif sourceType == 'news' then
+            sourceData = Config.NewsSellers[sourceName]
+        else
+            TriggerClientEvent('muhaddil-machines:Notify', src, '', 'El tipo de origen no es válido.', 'error')
+            return
+        end
 
-    local item = findItemInSource(sourceData, itemName)
-    if item then
-        local totalPrice = item.price * cantidad
-        handlePurchase(src, player, item, sourceName, totalPrice, cantidad)
-    else
-        TriggerClientEvent('muhaddil-machines:Notify', src, '', 'El artículo no está disponible', 'error')
-    end
-end)
+        local item = findItemInSource(sourceData, itemName)
+        if item then
+            local totalPrice = item.price * cantidad
+            handlePurchase(src, player, item, sourceName, totalPrice, cantidad)
+        else
+            TriggerClientEvent('muhaddil-machines:Notify', src, '', 'El artículo no está disponible', 'error')
+        end
+    end)
 
 RegisterServerEvent('muhaddil-machines:RemoveThirst') -- Event for the watercoolers to remove thirst
 AddEventHandler('muhaddil-machines:RemoveThirst', function()
     local src = source
-    
+
     if Config.Framework == 'qb' then
         local player = QBCore.Functions.GetPlayer(src)
         if player then
@@ -127,7 +139,7 @@ AddEventHandler('muhaddil-machines:RemoveThirst', function()
             if currentThirst < 100 then
                 local newThirst = math.min(currentThirst + Config.ThirstRemoval, 100)
                 player.Functions.SetMetaData('thirst', newThirst)
-                
+
                 TriggerClientEvent('hud:client:UpdateNeeds', src, player.PlayerData.metadata.hunger or 50, newThirst)
             else
                 print("[Info] El jugador " .. src .. " ya tiene la sed máxima (100).")
@@ -135,9 +147,17 @@ AddEventHandler('muhaddil-machines:RemoveThirst', function()
         else
             print("[Error] No se pudo obtener el jugador para src: " .. tostring(src))
         end
-
     elseif Config.Framework == 'esx' then
         TriggerClientEvent('esx_status:add', src, 'thirst', Config.ThirstRemoval)
+    elseif Config.Framework == 'ox' then
+        local player = Ox.GetPlayer(src)
+        local beforeStatus = player.getStatus('thirst')
+        player.removeStatus('thirst', Config.ThirstRemoval)
+        local afterStatus = player.getStatus('thirst')
+        DebugPrint("[Info] El jugador " ..
+        src .. " tenía " .. beforeStatus .. " de sed y ahora tiene " .. afterStatus .. ".")
+        local statuses = player.getStatuses()
+        DebugPrint("[Info] Los estados del jugador " .. src .. " son: " .. json.encode(statuses))
     else
         print("[Error] Configuración de framework no válida.")
     end

@@ -256,18 +256,32 @@ end
 
 local function WaterCoolerTarget()
     for waterCoolerName, data in pairs(Config.WaterCoolers) do
-        local options = {
-            {
-                label = "Beber Agua",
-                icon = 'fa-solid fa-glass-water',
-                onSelect = function(d)
-                    local entity = d.entity
-                    interactWithWaterCooler(entity)
-                end
-            }
-        }
+        if Config.Target == 'ox' then
+            exports.ox_target:addModel(joaat(data.model), {
+                {
+                    label = "Beber Agua",
+                    icon = 'fa-solid fa-glass-water',
+                    onSelect = function(d)
+                        local entity = d.entity
+                        interactWithWaterCooler(entity)
+                    end
+                }
+            })
 
-        exports.ox_target:addModel(joaat(data.model), options)
+        elseif Config.Target == 'qb' then
+            exports['qb-target']:AddTargetModel(joaat(data.model), {
+                options = {
+                    {
+                        label = "Beber Agua",
+                        icon = "fas fa-glass-water",
+                        action = function(entity)
+                            interactWithWaterCooler(entity)
+                        end
+                    }
+                },
+                distance = 2.0
+            })
+        end
     end
 end
 
@@ -416,51 +430,114 @@ end
 
 local function setupTargeting()
     for vendingMachineName, data in pairs(Config.machines) do
-        local options = {
-            {
-                label = "Abrir Máquina Expendedora",
-                icon = 'fa-solid fa-basket-shopping',
-                onSelect = function(d)
-                    if buying then return end
-                    local entity = d.entity
-                    showVendingMenu(vendingMachineName, entity, data.items)
-                end
-            }
+        local targetOptions = {
+            label = "Abrir Máquina Expendedora",
+            icon = 'fa-solid fa-basket-shopping',
+            ox = function(d)
+                if buying then return end
+                local entity = d.entity
+                showVendingMenu(vendingMachineName, entity, data.items)
+            end,
+            qb = function(entity)
+                if buying then return end
+                showVendingMenu(vendingMachineName, entity, data.items)
+            end
         }
 
-        exports.ox_target:addModel(joaat(data.model), options)
+        if Config.Target == 'ox' then
+            exports.ox_target:addModel(joaat(data.model), {
+                {
+                    label = targetOptions.label,
+                    icon = targetOptions.icon,
+                    onSelect = targetOptions.ox
+                }
+            })
+        elseif Config.Target == 'qb' then
+            exports['qb-target']:AddTargetModel(joaat(data.model), {
+                options = {
+                    {
+                        label = targetOptions.label,
+                        icon = targetOptions.icon,
+                        action = targetOptions.qb
+                    }
+                },
+                distance = 2.0
+            })
+        end
     end
 
     for standName, data in pairs(Config.Stands) do
-        local options = {
-            {
-                label = "Abrir Puesto de Comida",
-                icon = 'fa-solid fa-utensils',
-                onSelect = function(d)
-                    if buying then return end
-                    local entity = d.entity
-                    standMenu(standName, entity, data.items)
-                end
-            }
+        local targetOptions = {
+            label = "Abrir Puesto de Comida",
+            icon = 'fa-solid fa-utensils',
+            ox = function(d)
+                if buying then return end
+                local entity = d.entity
+                standMenu(standName, entity, data.items)
+            end,
+            qb = function(entity)
+                if buying then return end
+                standMenu(standName, entity, data.items)
+            end
         }
 
-        exports.ox_target:addModel(joaat(data.model), options)
+        if Config.Target == 'ox' then
+            exports.ox_target:addModel(joaat(data.model), {
+                {
+                    label = targetOptions.label,
+                    icon = targetOptions.icon,
+                    onSelect = targetOptions.ox
+                }
+            })
+        elseif Config.Target == 'qb' then
+            exports['qb-target']:AddTargetModel(joaat(data.model), {
+                options = {
+                    {
+                        label = targetOptions.label,
+                        icon = targetOptions.icon,
+                        action = targetOptions.qb
+                    }
+                },
+                distance = 2.0
+            })
+        end
     end
 
     for newsName, data in pairs(Config.NewsSellers) do
-        local options = {
-            {
-                label = "Abrir Venta de Noticias",
-                icon = 'fa-solid fa-newspaper',
-                onSelect = function(d)
-                    if buying then return end
-                    local entity = d.entity
-                    newsMenu(newsName, entity, data.items)
-                end
-            }
+        local targetOptions = {
+            label = "Abrir Venta de Noticias",
+            icon = 'fa-solid fa-newspaper',
+            ox = function(d)
+                if buying then return end
+                local entity = d.entity
+                newsMenu(newsName, entity, data.items)
+            end,
+            qb = function(entity)
+                if buying then return end
+                newsMenu(newsName, entity, data.items)
+            end
         }
 
-        exports.ox_target:addModel(joaat(data.model), options)
+        if Config.Target == 'ox' then
+            exports.ox_target:addModel(joaat(data.model), {
+                {
+                    label = targetOptions.label,
+                    icon = targetOptions.icon,
+                    onSelect = targetOptions.ox
+                }
+            })
+        elseif Config.Target == 'qb' then
+            exports['qb-target']:AddTargetModel(joaat(data.model), {
+                options = {
+                    {
+                        label = targetOptions.label,
+                        icon = targetOptions.icon,
+                        action = targetOptions.qb
+                    }
+                },
+                distance = 2.0
+            })
+        end
     end
 end
 

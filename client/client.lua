@@ -2,10 +2,9 @@ local buying = false                                     -- Variable to prevent 
 local LastWaterCoolerUse = 0                             -- Variable to prevent multiple uses of the water cooler
 local TimeoutDuration = Config.WaterCoolerTimeout * 1000 -- Timeout duration for water coolers in milliseconds
 local DrinkCount = 0                                     -- Variable to count the number of drinks
+local framework = Config.Framework
 
 function InitFramework()
-    local framework = Config.Framework
-
     if framework == "auto" then
         if exports['es_extended'] then
             framework = "esx"
@@ -57,11 +56,11 @@ function Notify(msgtitle, msg, time, type2) -- Notification function
             -- }
         })
     else
-        if Config.Framework == 'qb' then
+        if framework == 'qb' then
             QBCore.Functions.Notify(msg, type2, time)
-        elseif Config.Framework == 'esx' then
+        elseif framework == 'esx' then
             TriggerEvent('esx:showNotification', msg, type2, time)
-        elseif Config.Framework == 'ox' then
+        elseif framework == 'ox' then
             lib.notify({
                 title = msgtitle,
                 description = msg,

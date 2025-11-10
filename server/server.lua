@@ -1,22 +1,4 @@
-if Config.Framework == "esx" then
-    ESX = exports['es_extended']:getSharedObject()
-elseif Config.Framework == "qb" then
-    QBCore = exports['qb-core']:GetCoreObject()
-elseif Config.Framework == "ox" then
-    Ox = require '@ox_core.lib.init'
-else
-    ESX = exports['es_extended']:getSharedObject()
-end
-
-local function getPlayerObject(src) -- Get the player object
-    if Config.Framework == 'qb' then
-        return QBCore.Functions.GetPlayer(src)
-    elseif Config.Framework == 'esx' then
-        return ESX.GetPlayerFromId(src)
-    elseif Config.Framework == 'ox' then
-        return Ox.GetPlayer(src)
-    end
-end
+local framework = Config.Framework
 
 function DebugPrint(...)
     if Config.DebugMode then
@@ -24,12 +6,56 @@ function DebugPrint(...)
     end
 end
 
+function InitFramework()
+    if framework == "auto" then
+        if exports['es_extended'] then
+            DebugPrint('ESX Loaded')
+            framework = "esx"
+        elseif exports['qb-core'] then
+            DebugPrint('QB Loaded')
+            framework = "qb"
+        elseif pcall(require, '@ox_core.lib.init') then
+            DebugPrint('OX Loaded')
+            framework = "ox"
+        else
+            DebugPrint('Fallback Loaded')
+            framework = "esx"
+        end
+    end
+
+    if framework == "esx" then
+        ESX = exports['es_extended']:getSharedObject()
+    elseif framework == "qb" then
+        QBCore = exports['qb-core']:GetCoreObject()
+    elseif framework == "ox" then
+        Ox = require '@ox_core.lib.init'
+    else
+        ESX = exports['es_extended']:getSharedObject() -- fallback
+    end
+
+    return framework
+end
+
+InitFramework()
+
+local function getPlayerObject(src) -- Get the player object
+    if framework == 'qb' then
+        return QBCore.Functions.GetPlayer(src)
+    elseif framework == 'esx' then
+        return ESX.GetPlayerFromId(src)
+    elseif framework == 'ox' then
+        return Ox.GetPlayer(src)
+    end
+end
+
+lib.locale()
+
 local function TakeMoney(playerObject, method, amount) -- Take money from the player
     amount = tonumber(amount)
 
-    if Config.Framework == 'qb' then
+    if framework == 'qb' then
         return playerObject.Functions.RemoveMoney(method, amount)
-    elseif Config.Framework == 'esx' then
+    elseif framework == 'esx' then
         if method == 'cash' then
             if playerObject.getMoney() >= amount then
                 playerObject.removeMoney(amount)
@@ -41,7 +67,7 @@ local function TakeMoney(playerObject, method, amount) -- Take money from the pl
                 return true
             end
         end
-    elseif Config.Framework == 'ox' then
+    elseif framework == 'ox' then
         if exports.ox_inventory:GetItemCount(source, 'money') >= amount then
             exports.ox_inventory:RemoveItem(source, 'money', amount)
             return true
@@ -52,7 +78,7 @@ local function TakeMoney(playerObject, method, amount) -- Take money from the pl
 end
 
 local function giveItem(src, playerObject, item, amount) -- Give the item to the player
-    if Config.Framework == 'qb' then
+    if framework == 'qb' then
         if Config.Inventory == 'qs' then
             exports['qs-inventory']:AddItem(src, item.name, amount)
         elseif Config.Inventory == 'ox' then
@@ -64,7 +90,7 @@ local function giveItem(src, playerObject, item, amount) -- Give the item to the
                 playerObject.Functions.AddItem(item.name, amount)
             end
         end
-    elseif Config.Framework == 'esx' then
+    elseif framework == 'esx' then
         if Config.Inventory == 'qs' then
             exports['qs-inventory']:AddItem(src, item.name, amount)
         elseif Config.Inventory == 'ox' then
@@ -72,7 +98,7 @@ local function giveItem(src, playerObject, item, amount) -- Give the item to the
         else
             playerObject.addInventoryItem(item.name, amount)
         end
-    elseif Config.Framework == 'ox' then
+    elseif framework == 'ox' then
         exports.ox_inventory:AddItem(source, item.name, amount)
     end
 end
@@ -89,7 +115,7 @@ local function handlePurchase(src, player, item, machineName, totalPrice, cantid
     if success then
         giveItem(src, player, item, cantidad)
     else
-        TriggerClientEvent('muhaddil-machines:Notify', src, '', 'No tienes suficiente dinero.', 'error')
+        TriggerClientEvent('muhaddil-machines:Notify', src, '', locale('no_money'), 'error')
     end
 end
 
@@ -115,7 +141,7 @@ RegisterNetEvent('muhaddil-machines:buy',
         elseif sourceType == 'news' then
             sourceData = Config.NewsSellers[sourceName]
         else
-            TriggerClientEvent('muhaddil-machines:Notify', src, '', 'El tipo de origen no es válido.', 'error')
+            TriggerClientEvent('muhaddil-machines:Notify', src, '', locale('invalid_source_type'), 'error')
             return
         end
 
@@ -124,7 +150,7 @@ RegisterNetEvent('muhaddil-machines:buy',
             local totalPrice = item.price * cantidad
             handlePurchase(src, player, item, sourceName, totalPrice, cantidad)
         else
-            TriggerClientEvent('muhaddil-machines:Notify', src, '', 'El artículo no está disponible', 'error')
+            TriggerClientEvent('muhaddil-machines:Notify', src, '', locale('item_not_available'), 'error')
         end
     end)
 
@@ -132,7 +158,7 @@ RegisterServerEvent('muhaddil-machines:RemoveThirst') -- Event for the watercool
 AddEventHandler('muhaddil-machines:RemoveThirst', function()
     local src = source
 
-    if Config.Framework == 'qb' then
+    if framework == 'qb' then
         local player = QBCore.Functions.GetPlayer(src)
         if player then
             local currentThirst = player.PlayerData.metadata['thirst'] or 0
@@ -142,23 +168,22 @@ AddEventHandler('muhaddil-machines:RemoveThirst', function()
 
                 TriggerClientEvent('hud:client:UpdateNeeds', src, player.PlayerData.metadata.hunger or 50, newThirst)
             else
-                print("[Info] El jugador " .. src .. " ya tiene la sed máxima (100).")
+                print(locale('player_max_thirst', src))
             end
         else
-            print("[Error] No se pudo obtener el jugador para src: " .. tostring(src))
+            print(locale('player_not_found', tostring(src)))
         end
-    elseif Config.Framework == 'esx' then
+    elseif framework == 'esx' then
         TriggerClientEvent('esx_status:add', src, 'thirst', Config.ThirstRemoval)
-    elseif Config.Framework == 'ox' then
+    elseif framework == 'ox' then
         local player = Ox.GetPlayer(src)
         local beforeStatus = player.getStatus('thirst')
         player.removeStatus('thirst', Config.ThirstRemoval)
         local afterStatus = player.getStatus('thirst')
-        DebugPrint("[Info] El jugador " ..
-        src .. " tenía " .. beforeStatus .. " de sed y ahora tiene " .. afterStatus .. ".")
+        DebugPrint(locale('player_thirst_info', src, beforeStatus, afterStatus))
         local statuses = player.getStatuses()
-        DebugPrint("[Info] Los estados del jugador " .. src .. " son: " .. json.encode(statuses))
+        DebugPrint(locale('player_statuses', src, json.encode(statuses)))
     else
-        print("[Error] Configuración de framework no válida.")
+        print(locale('invalid_framework'))
     end
 end)

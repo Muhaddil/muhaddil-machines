@@ -1,0 +1,37 @@
+{
+  "no_money": "No tienes suficiente dinero.",
+  "invalid_source_type": "El tipo de origen no es válido.",
+  "item_not_available": "El artículo no está disponible",
+  "player_max_thirst": "[Info] El jugador %s ya tiene la sed máxima (100).",
+  "player_not_found": "[Error] No se pudo obtener el jugador para src: %s",
+  "player_thirst_info": "[Info] El jugador %s tenía %s de sed y ahora tiene %s.",
+  "player_statuses": "[Info] Los estados del jugador %s son: %s",
+  "invalid_framework": "[Error] Configuración de framework no válida.",
+  
+  "wait_before_use": "Debes esperar antes de usar nuevamente la fuente de agua.",
+  "slow_down": "¡Echa el freno madaleno!",
+  "wait_message": "Relaja, espera un poco antes de volver a usar la máquina",
+  
+  "select_quantity": "Selecciona la cantidad",
+  "quantity": "Cantidad",
+  "invalid_quantity": "Cantidad no válida",
+  
+  "vending_machine": "Máquina expendedora",
+  "open_vending_machine": "Abrir Máquina Expendedora",
+  
+  "drink_water": "Beber Agua",
+  "filling_glass": "Llenado Vaso",
+  "fresh_water": "Agua fresca",
+  "drank_water": "Has tomado un vaso de agua.",
+  "keep_drinking_warning": "Sigues bebiendo... ten cuidado.",
+  "too_much_water": "Demasiada agua",
+  "died_from_water": "Has bebido demasiada agua y has muerto.",
+  
+  "food_stand": "Puesto de Comida",
+  "open_food_stand": "Abrir Puesto de Comida",
+  
+  "news_seller": "Venta de Noticias",
+  "open_news_seller": "Abrir Venta de Noticias",
+  
+  "error": "Error"
+}

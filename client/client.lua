@@ -3,15 +3,36 @@ local LastWaterCoolerUse = 0                             -- Variable to prevent 
 local TimeoutDuration = Config.WaterCoolerTimeout * 1000 -- Timeout duration for water coolers in milliseconds
 local DrinkCount = 0                                     -- Variable to count the number of drinks
 
-if Config.Framework == "esx" then
-    ESX = exports['es_extended']:getSharedObject()
-elseif Config.Framework == "qb" then
-    QBCore = exports['qb-core']:GetCoreObject()
-elseif Config.Framework == "ox" then
-    Ox = require '@ox_core.lib.init'
-else
-    ESX = exports['es_extended']:getSharedObject()
+function InitFramework()
+    local framework = Config.Framework
+
+    if framework == "auto" then
+        if exports['es_extended'] then
+            framework = "esx"
+        elseif exports['qb-core'] then
+            framework = "qb"
+        elseif pcall(require, '@ox_core.lib.init') then
+            framework = "ox"
+        else
+            framework = "esx"
+        end
+    end
+
+    if framework == "esx" then
+        ESX = exports['es_extended']:getSharedObject()
+    elseif framework == "qb" then
+        QBCore = exports['qb-core']:GetCoreObject()
+    elseif framework == "ox" then
+        Ox = require '@ox_core.lib.init'
+    else
+        ESX = exports['es_extended']:getSharedObject() -- fallback
+    end
+
+    return framework
 end
+
+InitFramework()
+lib.locale()
 
 function DebugPrint(...) -- Debug print function
     if Config.DebugMode then
@@ -26,14 +47,14 @@ function Notify(msgtitle, msg, time, type2) -- Notification function
             description = msg,
             showDuration = true,
             type = type2,
-            style = {
-                backgroundColor = 'rgba(0, 0, 0, 0.75)',
-                color = 'rgba(255, 255, 255, 1)',
-                ['.description'] = {
-                    color = '#909296',
-                    backgroundColor = 'transparent'
-                }
-            }
+            -- style = {
+            --     backgroundColor = 'rgba(0, 0, 0, 0.75)',
+            --     color = 'rgba(255, 255, 255, 1)',
+            --     ['.description'] = {
+            --         color = '#909296',
+            --         backgroundColor = 'transparent'
+            --     }
+            -- }
         })
     else
         if Config.Framework == 'qb' then
@@ -46,14 +67,14 @@ function Notify(msgtitle, msg, time, type2) -- Notification function
                 description = msg,
                 showDuration = true,
                 type = type2,
-                style = {
-                    backgroundColor = 'rgba(0, 0, 0, 0.75)',
-                    color = 'rgba(255, 255, 255, 1)',
-                    ['.description'] = {
-                        color = '#909296',
-                        backgroundColor = 'transparent'
-                    }
-                }
+                -- style = {
+                --     backgroundColor = 'rgba(0, 0, 0, 0.75)',
+                --     color = 'rgba(255, 255, 255, 1)',
+                --     ['.description'] = {
+                --         color = '#909296',
+                --         backgroundColor = 'transparent'
+                --     }
+                -- }
             })
         end
     end
@@ -124,8 +145,8 @@ end
 
 
 local function showQuantityDialog(item, vendingMachineName, entity)
-    local input = lib.inputDialog("Selecciona la cantidad", {
-        { type = 'number', label = 'Cantidad', min = 1, max = Config.InputMaxValue, default = 1 }
+    local input = lib.inputDialog(locale('select_quantity'), {
+        { type = 'number', label = locale('quantity'), min = 1, max = Config.InputMaxValue, default = 1 }
     })
 
     if not input then return end
@@ -142,7 +163,7 @@ local function showQuantityDialog(item, vendingMachineName, entity)
 
         TriggerServerEvent('muhaddil-machines:buy', 'machine', vendingMachineName, item.name, cantidad)
     else
-        Notify('Error', 'Cantidad no válida', 5000, "error")
+        Notify(locale('error'), locale('invalid_quantity'), 5000, "error")
     end
 
     buying = false
@@ -168,7 +189,7 @@ local function showVendingMenu(vendingMachineName, entity, items)
 
     lib.registerContext({
         id = 'vending_menu_' .. vendingMachineName,
-        title = 'Máquina expendedora',
+        title = locale('vending_machine'),
         canClose = true,
         options = options
     })
@@ -181,8 +202,8 @@ local function interactWithWaterCooler(entity)
 
     if Config.ShowWaitNotification then
         if currentTime - LastWaterCoolerUse < TimeoutDuration then
-            DebugPrint("Debes esperar antes de usar nuevamente la fuente de agua.")
-            Notify('¡Echa el freno madaleno!', 'Relaja, espera un poco antes de volver a usar la máquina', 5000, "error")
+            DebugPrint(locale('wait_before_use'))
+            Notify(locale('slow_down'), locale('wait_message'), 5000, "error")
             return
         end
     end
@@ -204,7 +225,7 @@ local function interactWithWaterCooler(entity)
 
     lib.progressBar({
         duration = 2000,
-        label = 'Llenado Vaso',
+        label = locale('filling_glass'),
     })
 
     Citizen.CreateThread(function()
@@ -230,15 +251,15 @@ local function interactWithWaterCooler(entity)
 
             if DrinkCount >= Config.MaxDrinksBeforeKill then
                 SetEntityHealth(playerPed, 0)
-                Notify('Demasiada agua', 'Has bebido demasiada agua y has muerto.', 5000, "error")
+                Notify(locale('too_much_water'), locale('died_from_water'), 5000, "error")
                 DrinkCount = 0
             elseif DrinkCount >= warningThreshold then
-                Notify('Agua fresca', 'Sigues bebiendo... ten cuidado.', 3000, "info")
+                Notify(locale('fresh_water'), locale('keep_drinking_warning'), 3000, "info")
             else
-                Notify('Agua fresca', 'Has tomado un vaso de agua.', 3000, "info")
+                Notify(locale('fresh_water'), locale('drank_water'), 3000, "info")
             end
         else
-            Notify('Agua fresca', 'Has tomado un vaso de agua.', 3000, "info")
+            Notify(locale('fresh_water'), locale('drank_water'), 3000, "info")
         end
 
         IsAnimated = false
@@ -259,7 +280,7 @@ local function WaterCoolerTarget()
         if Config.Target == 'ox' then
             exports.ox_target:addModel(joaat(data.model), {
                 {
-                    label = "Beber Agua",
+                    label = locale('drink_water'),
                     icon = 'fa-solid fa-glass-water',
                     onSelect = function(d)
                         local entity = d.entity
@@ -272,7 +293,7 @@ local function WaterCoolerTarget()
             exports['qb-target']:AddTargetModel(joaat(data.model), {
                 options = {
                     {
-                        label = "Beber Agua",
+                        label = locale('drink_water'),
                         icon = "fas fa-glass-water",
                         action = function(entity)
                             interactWithWaterCooler(entity)
@@ -308,8 +329,8 @@ local function standAnimation(entity)
 end
 
 local function showQuantityDialogStands(item, standName, entity)
-    local input = lib.inputDialog("Selecciona la cantidad", {
-        { type = 'number', label = 'Cantidad', min = 1, max = Config.InputMaxValue, default = 1 }
+    local input = lib.inputDialog(locale('select_quantity'), {
+        { type = 'number', label = locale('quantity'), min = 1, max = Config.InputMaxValue, default = 1 }
     })
 
     if not input then return end
@@ -324,7 +345,7 @@ local function showQuantityDialogStands(item, standName, entity)
 
         TriggerServerEvent('muhaddil-machines:buy', 'stand', standName, item.name, cantidad)
     else
-        Notify('Error', 'Cantidad no válida', 5000, "error")
+        Notify(locale('error'), locale('invalid_quantity'), 5000, "error")
     end
 
     buying = false
@@ -346,7 +367,7 @@ local function standMenu(standName, entity, items)
 
     lib.registerContext({
         id = 'stand_menu_' .. standName,
-        title = 'Puesto de Comida',
+        title = locale('food_stand'),
         canClose = true,
         options = options
     })
@@ -382,8 +403,8 @@ end
 
 
 local function showQuantityDialogNews(item, newsName, entity)
-    local input = lib.inputDialog("Selecciona la cantidad", {
-        { type = 'number', label = 'Cantidad', min = 1, max = Config.InputMaxValue, default = 1 }
+    local input = lib.inputDialog(locale('select_quantity'), {
+        { type = 'number', label = locale('quantity'), min = 1, max = Config.InputMaxValue, default = 1 }
     })
 
     if not input then return end
@@ -398,7 +419,7 @@ local function showQuantityDialogNews(item, newsName, entity)
 
         TriggerServerEvent('muhaddil-machines:buy', 'news', newsName, item.name, cantidad)
     else
-        Notify('Error', 'Cantidad no válida', 5000, "error")
+        Notify(locale('error'), locale('invalid_quantity'), 5000, "error")
     end
 
     buying = false
@@ -420,7 +441,7 @@ local function newsMenu(newsName, entity, items)
 
     lib.registerContext({
         id = 'news_menu_' .. newsName,
-        title = 'Venta de Noticias',
+        title = locale('news_seller'),
         canClose = true,
         options = options
     })
@@ -431,7 +452,7 @@ end
 local function setupTargeting()
     for vendingMachineName, data in pairs(Config.machines) do
         local targetOptions = {
-            label = "Abrir Máquina Expendedora",
+            label = locale('open_vending_machine'),
             icon = 'fa-solid fa-basket-shopping',
             ox = function(d)
                 if buying then return end
@@ -468,7 +489,7 @@ local function setupTargeting()
 
     for standName, data in pairs(Config.Stands) do
         local targetOptions = {
-            label = "Abrir Puesto de Comida",
+            label = locale('open_food_stand'),
             icon = 'fa-solid fa-utensils',
             ox = function(d)
                 if buying then return end
@@ -505,7 +526,7 @@ local function setupTargeting()
 
     for newsName, data in pairs(Config.NewsSellers) do
         local targetOptions = {
-            label = "Abrir Venta de Noticias",
+            label = locale('open_news_seller'),
             icon = 'fa-solid fa-newspaper',
             ox = function(d)
                 if buying then return end

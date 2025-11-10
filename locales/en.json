@@ -1,0 +1,37 @@
+{
+  "no_money": "You don't have enough money.",
+  "invalid_source_type": "The source type is not valid.",
+  "item_not_available": "The item is not available.",
+  "player_max_thirst": "[Info] Player %s already has maximum thirst (100).",
+  "player_not_found": "[Error] Could not retrieve player for src: %s",
+  "player_thirst_info": "[Info] Player %s had %s thirst and now has %s.",
+  "player_statuses": "[Info] Player %s statuses are: %s",
+  "invalid_framework": "[Error] Invalid framework configuration.",
+  
+  "wait_before_use": "You must wait before using the water source again.",
+  "slow_down": "Slow down, buddy!",
+  "wait_message": "Relax, wait a bit before using the machine again.",
+  
+  "select_quantity": "Select quantity",
+  "quantity": "Quantity",
+  "invalid_quantity": "Invalid quantity",
+  
+  "vending_machine": "Vending Machine",
+  "open_vending_machine": "Open Vending Machine",
+  
+  "drink_water": "Drink Water",
+  "filling_glass": "Filling Glass",
+  "fresh_water": "Fresh Water",
+  "drank_water": "You drank a glass of water.",
+  "keep_drinking_warning": "You keep drinking... be careful.",
+  "too_much_water": "Too much water",
+  "died_from_water": "You drank too much water and died.",
+  
+  "food_stand": "Food Stand",
+  "open_food_stand": "Open Food Stand",
+  
+  "news_seller": "News Vendor",
+  "open_news_seller": "Open News Vendor",
+  
+  "error": "Error"
+}

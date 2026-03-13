@@ -7,18 +7,18 @@
   "player_thirst_info": "[Info] El jugador %s tenía %s de sed y ahora tiene %s.",
   "player_statuses": "[Info] Los estados del jugador %s son: %s",
   "invalid_framework": "[Error] Configuración de framework no válida.",
-  
+
   "wait_before_use": "Debes esperar antes de usar nuevamente la fuente de agua.",
   "slow_down": "¡Echa el freno madaleno!",
   "wait_message": "Relaja, espera un poco antes de volver a usar la máquina",
-  
+
   "select_quantity": "Selecciona la cantidad",
   "quantity": "Cantidad",
   "invalid_quantity": "Cantidad no válida",
-  
+
   "vending_machine": "Máquina expendedora",
   "open_vending_machine": "Abrir Máquina Expendedora",
-  
+
   "drink_water": "Beber Agua",
   "filling_glass": "Llenado Vaso",
   "fresh_water": "Agua fresca",
@@ -26,12 +26,27 @@
   "keep_drinking_warning": "Sigues bebiendo... ten cuidado.",
   "too_much_water": "Demasiada agua",
   "died_from_water": "Has bebido demasiada agua y has muerto.",
-  
+
   "food_stand": "Puesto de Comida",
   "open_food_stand": "Abrir Puesto de Comida",
-  
+
   "news_seller": "Venta de Noticias",
   "open_news_seller": "Abrir Venta de Noticias",
-  
-  "error": "Error"
+
+  "error": "Error",
+
+  "nui_items": "ARTÍCULOS",
+  "nui_tap_to_select": "TOCA PARA <b>SELECCIONAR</b>",
+  "nui_cash_or_bank": "EFECTIVO O <b>BANCO</b>",
+  "nui_no_items": "NO HAY ARTÍCULOS DISPONIBLES",
+  "nui_tap_to_buy": "TOCA PARA COMPRAR",
+  "nui_select_quantity": "SELECCIONA CANTIDAD",
+  "nui_unit_price": "PRECIO UNITARIO: ",
+  "nui_total": "TOTAL",
+  "nui_back": "<i class=\"fa-solid fa-arrow-left\"></i> VOLVER",
+  "nui_purchase": "<i class=\"fa-solid fa-cart-shopping\"></i> COMPRAR",
+  "nui_purchased": "¡COMPRADO!",
+  "nui_failed": "FALLIDO",
+  "nui_esc_to_close": "ESC PARA CERRAR",
+  "nui_online": "EN LÍNEA"
 }

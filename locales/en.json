@@ -7,18 +7,18 @@
   "player_thirst_info": "[Info] Player %s had %s thirst and now has %s.",
   "player_statuses": "[Info] Player %s statuses are: %s",
   "invalid_framework": "[Error] Invalid framework configuration.",
-  
+
   "wait_before_use": "You must wait before using the water source again.",
   "slow_down": "Slow down, buddy!",
   "wait_message": "Relax, wait a bit before using the machine again.",
-  
+
   "select_quantity": "Select quantity",
   "quantity": "Quantity",
   "invalid_quantity": "Invalid quantity",
-  
+
   "vending_machine": "Vending Machine",
   "open_vending_machine": "Open Vending Machine",
-  
+
   "drink_water": "Drink Water",
   "filling_glass": "Filling Glass",
   "fresh_water": "Fresh Water",
@@ -26,12 +26,27 @@
   "keep_drinking_warning": "You keep drinking... be careful.",
   "too_much_water": "Too much water",
   "died_from_water": "You drank too much water and died.",
-  
+
   "food_stand": "Food Stand",
   "open_food_stand": "Open Food Stand",
-  
+
   "news_seller": "News Vendor",
   "open_news_seller": "Open News Vendor",
-  
-  "error": "Error"
+
+  "error": "Error",
+
+  "nui_items": "ITEMS",
+  "nui_tap_to_select": "TAP TO <b>SELECT</b>",
+  "nui_cash_or_bank": "CASH OR <b>BANK</b>",
+  "nui_no_items": "NO ITEMS AVAILABLE",
+  "nui_tap_to_buy": "TAP TO BUY",
+  "nui_select_quantity": "SELECT QUANTITY",
+  "nui_unit_price": "UNIT PRICE: ",
+  "nui_total": "TOTAL",
+  "nui_back": "<i class=\"fa-solid fa-arrow-left\"></i> BACK",
+  "nui_purchase": "<i class=\"fa-solid fa-cart-shopping\"></i> PURCHASE",
+  "nui_purchased": "PURCHASED!",
+  "nui_failed": "FAILED",
+  "nui_esc_to_close": "ESC TO CLOSE",
+  "nui_online": "ONLINE"
 }

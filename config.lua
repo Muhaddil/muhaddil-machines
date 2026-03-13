@@ -1,23 +1,25 @@
 Config = Config or {}
 
-Config.DebugMode = false -- Enable debug mode
-Config.Framework = 'auto' -- 'auto', 'esx', 'qb' or 'ox'
-Config.UseOXNotifications = true -- Use OX Notifications or framework notifications
-Config.Target = 'ox' -- 'qb' to use qbtarget or 'ox' to use ox_target
-Config.Inventory = 'ox'-- 'qs', 'ox' or leave blank
-Config.NewQBInventory = false -- If you're using the new QB Inventory
+Config.DebugMode = false            -- Enable debug mode
+Config.Framework = 'auto'           -- 'auto', 'esx', 'qb' or 'ox'
+Config.UseOXNotifications = true    -- Use OX Notifications or framework notifications
+Config.Target = 'ox'                -- 'qb' to use qbtarget or 'ox' to use ox_target
+Config.Inventory = 'ox'             -- 'qs', 'ox' or leave blank
+Config.NewQBInventory = false       -- If you're using the new QB Inventory
+Config.AutoVersionChecker = true    -- Enable auto version checker
 
-Config.ThirstRemoval = 150000 -- Amount of thirst removed by water coolers
-Config.WaterCoolerTimeout = 30 -- Timeout duration for water coolers in seconds
-Config.VisibleProp = false -- Show the prop when buying a drink
-Config.InputMaxValue = 10 -- Maximum value for the input
-Config.KillPlayerOnExcess = true -- Enable one of the two (WaterCooler)
+Config.ThirstRemoval = 150000       -- Amount of thirst removed by water coolers
+Config.WaterCoolerTimeout = 30      -- Timeout duration for water coolers in seconds
+Config.VisibleProp = false          -- Show the prop when buying a drink
+Config.InputMaxValue = 10           -- Maximum value for the input
+Config.KillPlayerOnExcess = true    -- Enable one of the two (WaterCooler)
 Config.ShowWaitNotification = false -- Enable one of the two (WaterCooler)
-Config.MaxDrinksBeforeKill = 3 -- (WaterCooler)
-Config.CountDrinksPlace = 'before' -- 'before' or 'after', it varies in the result of the Config.MaxDrinksBeforeKill (WaterCooler)
+Config.MaxDrinksBeforeKill = 3      -- (WaterCooler)
+Config.CountDrinksPlace =
+'before'                            -- 'before' or 'after', it varies in the result of the Config.MaxDrinksBeforeKill (WaterCooler)
 
-Config.Animations = { -- Animations for the vending machines
-    stand = { -- Stand animations
+Config.Animations = {               -- Animations for the vending machines
+    stand = {                       -- Stand animations
         "special_ped@baygor@monologue_2@monologue_2h",
         "you_can_ignore_me_7"
     },
@@ -173,8 +175,8 @@ Config.machines = { -- Vending machines
 }
 
 Config.WaterCoolers = { -- Water coolers
-    {model = 'prop_watercooler_dark',},
-    {model = 'prop_watercooler',},
+    { model = 'prop_watercooler_dark', },
+    { model = 'prop_watercooler', },
 }
 
 Config.Stands = { -- Stands

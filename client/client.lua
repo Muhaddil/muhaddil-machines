@@ -46,14 +46,6 @@ function Notify(msgtitle, msg, time, type2) -- Notification function
             description = msg,
             showDuration = true,
             type = type2,
-            -- style = {
-            --     backgroundColor = 'rgba(0, 0, 0, 0.75)',
-            --     color = 'rgba(255, 255, 255, 1)',
-            --     ['.description'] = {
-            --         color = '#909296',
-            --         backgroundColor = 'transparent'
-            --     }
-            -- }
         })
     else
         if framework == 'qb' then
@@ -66,14 +58,6 @@ function Notify(msgtitle, msg, time, type2) -- Notification function
                 description = msg,
                 showDuration = true,
                 type = type2,
-                -- style = {
-                --     backgroundColor = 'rgba(0, 0, 0, 0.75)',
-                --     color = 'rgba(255, 255, 255, 1)',
-                --     ['.description'] = {
-                --         color = '#909296',
-                --         backgroundColor = 'transparent'
-                --     }
-                -- }
             })
         end
     end
@@ -84,14 +68,14 @@ AddEventHandler("muhaddil-machines:Notify", function(msgtitle, msg, time, type)
     Notify(msgtitle, msg, time, type)
 end)
 
-local function loadAnimDict(animDict)
+function loadAnimDict(animDict)
     RequestAnimDict(animDict)
     while not HasAnimDictLoaded(animDict) do
         Citizen.Wait(0)
     end
 end
 
-local function playAnimation(ped, animDict, animName)
+function playAnimation(ped, animDict, animName)
     loadAnimDict(animDict)
     TaskPlayAnim(ped, animDict, animName, 8.0, 5.0, -1, 1, 1, false, false, false)
     Citizen.Wait(4500)
@@ -99,7 +83,7 @@ local function playAnimation(ped, animDict, animName)
     RemoveAnimDict(animDict)
 end
 
-local function vendingAnimation(entity)
+function vendingAnimation(entity)
     local ped = PlayerPedId()
     local position = GetOffsetFromEntityInWorldCoords(entity, 0.0, -0.97, 0.05)
     local heading = GetEntityHeading(entity)
@@ -142,61 +126,93 @@ local function vendingAnimation(entity)
     end)
 end
 
+function openNUI(sourceType, machineName, entity, items, title)
+    SetNuiFocus(true, true)
 
-local function showQuantityDialog(item, vendingMachineName, entity)
-    local input = lib.inputDialog(locale('select_quantity'), {
-        { type = 'number', label = locale('quantity'), min = 1, max = Config.InputMaxValue, default = 1 }
+    local nuiLocales = {
+        items = locale('nui_items'),
+        tap_to_select = locale('nui_tap_to_select'),
+        cash_or_bank = locale('nui_cash_or_bank'),
+        no_items = locale('nui_no_items'),
+        tap_to_buy = locale('nui_tap_to_buy'),
+        select_quantity = locale('nui_select_quantity'),
+        unit_price = locale('nui_unit_price'),
+        total = locale('nui_total'),
+        back = locale('nui_back'),
+        purchase = locale('nui_purchase'),
+        purchased = locale('nui_purchased'),
+        failed = locale('nui_failed'),
+        esc_to_close = locale('nui_esc_to_close'),
+        online = locale('nui_online')
+    }
+
+    SendNUIMessage({
+        action        = 'open',
+        sourceType    = sourceType,
+        machineName   = machineName,
+        items         = items,
+        title         = title,
+        inputMaxValue = Config.InputMaxValue,
+        locales       = nuiLocales
     })
+end
 
-    if not input then return end
-    local cantidad = input[1]
+function closeNUI()
+    SetNuiFocus(false, false)
+end
 
-    if cantidad and cantidad > 0 then
-        local ped = PlayerPedId()
-        if buying then return end
-        buying = true
+RegisterNUICallback('selectItem', function(data, cb)
+    local sourceType  = data.sourceType or 'machine'
+    local machineName = data.machineName
+    local itemName    = data.itemName
+    local itemPrice   = data.itemPrice
+    local cantidad    = tonumber(data.quantity) or 1
 
-        vendingAnimation(entity)
-
-        Citizen.Wait(4500)
-
-        TriggerServerEvent('muhaddil-machines:buy', 'machine', vendingMachineName, item.name, cantidad)
-    else
-        Notify(locale('error'), locale('invalid_quantity'), 5000, "error")
+    if not itemName or not machineName or cantidad <= 0 then
+        cb({ ok = false })
+        return
     end
 
+    Citizen.CreateThread(function()
+        if sourceType == 'machine' then
+            vendingAnimation(GetClosestObjectOfType(
+                GetEntityCoords(PlayerPedId()), 3.0, GetHashKey(
+                    Config.machines[machineName] and Config.machines[machineName].model or ''
+                ), false, false, false
+            ))
+            Citizen.Wait(4500)
+        elseif sourceType == 'stand' then
+            standAnimation(GetClosestObjectOfType(
+                GetEntityCoords(PlayerPedId()), 3.0, GetHashKey(
+                    Config.Stands[machineName] and Config.Stands[machineName].model or ''
+                ), false, false, false
+            ))
+        elseif sourceType == 'news' then
+            newsAnimation(GetClosestObjectOfType(
+                GetEntityCoords(PlayerPedId()), 3.0, GetHashKey(
+                    Config.NewsSellers[machineName] and Config.NewsSellers[machineName].model or ''
+                ), false, false, false
+            ))
+        end
+
+        TriggerServerEvent('muhaddil-machines:buy', sourceType, machineName, itemName, cantidad)
+    end)
+
+    cb({ ok = true })
+end)
+
+RegisterNUICallback('close', function(data, cb)
+    closeNUI()
     buying = false
+    cb({ ok = true })
+end)
+
+function showVendingMenu(vendingMachineName, entity, items)
+    if buying then return end
+    openNUI('machine', vendingMachineName, entity, items, locale('vending_machine'))
 end
 
-local function replacePrice(inputString, price)
-    return inputString:gsub("%%price%%", tostring(price))
-end
-
-local function showVendingMenu(vendingMachineName, entity, items)
-    local options = {}
-
-    for _, item in pairs(items) do
-        table.insert(options, {
-            title = replacePrice(item.label, item.price),
-            icon = item.icon or 'fa-solid fa-bottle-water',
-            onSelect = function()
-                if buying then return end
-                showQuantityDialog(item, vendingMachineName, entity)
-            end
-        })
-    end
-
-    lib.registerContext({
-        id = 'vending_menu_' .. vendingMachineName,
-        title = locale('vending_machine'),
-        canClose = true,
-        options = options
-    })
-
-    lib.showContext('vending_menu_' .. vendingMachineName)
-end
-
-local function interactWithWaterCooler(entity)
+function interactWithWaterCooler(entity)
     local currentTime = GetGameTimer()
 
     if Config.ShowWaitNotification then
@@ -274,7 +290,7 @@ local function interactWithWaterCooler(entity)
     end)
 end
 
-local function WaterCoolerTarget()
+function WaterCoolerTarget()
     for waterCoolerName, data in pairs(Config.WaterCoolers) do
         if Config.Target == 'ox' then
             exports.ox_target:addModel(joaat(data.model), {
@@ -287,7 +303,6 @@ local function WaterCoolerTarget()
                     end
                 }
             })
-
         elseif Config.Target == 'qb' then
             exports['qb-target']:AddTargetModel(joaat(data.model), {
                 options = {
@@ -305,7 +320,7 @@ local function WaterCoolerTarget()
     end
 end
 
-local function standAnimation(entity)
+function standAnimation(entity)
     local ped = PlayerPedId()
     local position = GetOffsetFromEntityInWorldCoords(entity, 0.0, -0.97, 0.05)
     local heading = GetEntityHeading(entity)
@@ -327,54 +342,12 @@ local function standAnimation(entity)
     buying = false
 end
 
-local function showQuantityDialogStands(item, standName, entity)
-    local input = lib.inputDialog(locale('select_quantity'), {
-        { type = 'number', label = locale('quantity'), min = 1, max = Config.InputMaxValue, default = 1 }
-    })
-
-    if not input then return end
-    local cantidad = input[1]
-
-    if cantidad and cantidad > 0 then
-        local ped = PlayerPedId()
-        if buying then return end
-        buying = true
-
-        standAnimation(entity)
-
-        TriggerServerEvent('muhaddil-machines:buy', 'stand', standName, item.name, cantidad)
-    else
-        Notify(locale('error'), locale('invalid_quantity'), 5000, "error")
-    end
-
-    buying = false
+function standMenu(standName, entity, items)
+    if buying then return end
+    openNUI('stand', standName, entity, items, locale('food_stand'))
 end
 
-local function standMenu(standName, entity, items)
-    local options = {}
-
-    for _, item in pairs(items) do
-        table.insert(options, {
-            title = replacePrice(item.label, item.price),
-            icon = item.icon or 'fa-solid fa-bottle-water',
-            onSelect = function()
-                if buying then return end
-                showQuantityDialogStands(item, standName, entity)
-            end
-        })
-    end
-
-    lib.registerContext({
-        id = 'stand_menu_' .. standName,
-        title = locale('food_stand'),
-        canClose = true,
-        options = options
-    })
-
-    lib.showContext('stand_menu_' .. standName)
-end
-
-local function newsAnimation(entity)
+function newsAnimation(entity)
     local ped = PlayerPedId()
     local position = GetOffsetFromEntityInWorldCoords(entity, 0.0, -0.97, 0.05)
     local heading = GetEntityHeading(entity)
@@ -400,55 +373,12 @@ local function newsAnimation(entity)
     buying = false
 end
 
-
-local function showQuantityDialogNews(item, newsName, entity)
-    local input = lib.inputDialog(locale('select_quantity'), {
-        { type = 'number', label = locale('quantity'), min = 1, max = Config.InputMaxValue, default = 1 }
-    })
-
-    if not input then return end
-    local cantidad = input[1]
-
-    if cantidad and cantidad > 0 then
-        local ped = PlayerPedId()
-        if buying then return end
-        buying = true
-
-        newsAnimation(entity)
-
-        TriggerServerEvent('muhaddil-machines:buy', 'news', newsName, item.name, cantidad)
-    else
-        Notify(locale('error'), locale('invalid_quantity'), 5000, "error")
-    end
-
-    buying = false
+function newsMenu(newsName, entity, items)
+    if buying then return end
+    openNUI('news', newsName, entity, items, locale('news_seller'))
 end
 
-local function newsMenu(newsName, entity, items)
-    local options = {}
-
-    for _, item in pairs(items) do
-        table.insert(options, {
-            title = replacePrice(item.label, item.price),
-            icon = item.icon or 'fa-solid fa-bottle-water',
-            onSelect = function()
-                if buying then return end
-                showQuantityDialogNews(item, newsName, entity)
-            end
-        })
-    end
-
-    lib.registerContext({
-        id = 'news_menu_' .. newsName,
-        title = locale('news_seller'),
-        canClose = true,
-        options = options
-    })
-
-    lib.showContext('news_menu_' .. newsName)
-end
-
-local function setupTargeting()
+function setupTargeting()
     for vendingMachineName, data in pairs(Config.machines) do
         local targetOptions = {
             label = locale('open_vending_machine'),
@@ -565,5 +495,4 @@ CreateThread(function()
     Wait(100)
     setupTargeting()
     WaterCoolerTarget()
-    -- standsTarget()
 end)

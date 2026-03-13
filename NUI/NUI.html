@@ -1,53 +1,865 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Vending Machine</title>
+    <meta charset="UTF-8" />
+    <title>Muhaddil Machines</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        :root {
+            --cyan: #00d2ff;
+            --purple: #7b2fff;
+            --gold: #ffd166;
+            --red: #ff4d6d;
+            --green: #06d6a0;
+            --bg: #0a0e1a;
+            --bg2: #0d1220;
+            --border: rgba(0, 210, 255, 0.22);
+            --text: #e8f4ff;
+            --muted: rgba(180, 210, 240, 0.55);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            background: transparent;
+            font-family: "Rajdhani", sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-left: 36px;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        #panel {
+            display: none;
+            pointer-events: all;
+            width: 400px;
+            max-height: 86vh;
+            flex-direction: column;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        #panel.visible {
+            display: flex;
+            animation: slideIn 0.28s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-22px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .hdr {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 18px;
+            height: 60px;
+            background: var(--bg2);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .hdr-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hdr-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 15px;
+        }
+
+        .hdr-sup {
+            font-family: "Share Tech Mono", monospace;
+            font-size: 9px;
+            letter-spacing: 3px;
+            color: var(--cyan);
+            opacity: 0.75;
+        }
+
+        .hdr-title {
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 0.5px;
+            line-height: 1.1;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-family: "Share Tech Mono", monospace;
+            font-size: 9px;
+            color: var(--green);
+            letter-spacing: 1px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.2;
+            }
+        }
+
+        .close-btn {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 77, 109, 0.12);
+            border: 1px solid rgba(255, 77, 109, 0.3);
+            border-radius: 8px;
+            color: var(--red);
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.18s;
+            margin-left: 12px;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 77, 109, 0.25);
+        }
+
+        .info-bar {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            padding: 7px 18px;
+            background: #060910;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+        }
+
+        .tag {
+            font-family: "Share Tech Mono", monospace;
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--muted);
+        }
+
+        .tag b {
+            color: var(--cyan);
+            font-weight: 400;
+        }
+
+        .sep {
+            width: 1px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        #items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 210, 255, 0.2) transparent;
+        }
+
+        .card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            background: #0d1220;
+            border: 1px solid rgba(0, 210, 255, 0.14);
+            border-radius: 9px;
+            cursor: pointer;
+            transition:
+                background 0.18s,
+                border-color 0.18s,
+                transform 0.15s;
+            position: relative;
+            opacity: 0;
+            animation: cardIn 0.25s ease forwards;
+        }
+
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateX(-12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .card:hover {
+            background: #111829;
+            border-color: rgba(0, 210, 255, 0.35);
+            transform: translateX(4px);
+        }
+
+        .card:active {
+            transform: translateX(2px);
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 18%;
+            bottom: 18%;
+            width: 2px;
+            border-radius: 2px;
+            background: linear-gradient(180deg, var(--cyan), var(--purple));
+            opacity: 0;
+            transition: opacity 0.18s;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: #141c2e;
+            border: 1px solid rgba(0, 210, 255, 0.18);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--cyan);
+            flex-shrink: 0;
+            transition:
+                background 0.18s,
+                border-color 0.18s;
+        }
+
+        .card:hover .card-icon {
+            background: #1a2440;
+            border-color: rgba(0, 210, 255, 0.4);
+        }
+
+        .card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-sub {
+            font-size: 10px;
+            color: var(--muted);
+            font-family: "Share Tech Mono", monospace;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
+        .card-price {
+            font-family: "Share Tech Mono", monospace;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--gold);
+            flex-shrink: 0;
+        }
+
+        .card-arrow {
+            font-size: 10px;
+            color: var(--cyan);
+            opacity: 0;
+            transition:
+                opacity 0.18s,
+                transform 0.18s;
+            transform: translateX(-4px);
+        }
+
+        .card:hover .card-arrow {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .footer {
+            padding: 8px 18px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .footer span {
+            font-family: "Share Tech Mono", monospace;
+            font-size: 9px;
+            letter-spacing: 1.5px;
+            color: rgba(180, 210, 240, 0.25);
+        }
+
+        #qty-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 22px;
+            padding: 32px 24px 28px;
+            flex: 1;
+        }
+
+        #qty-screen.visible {
+            display: flex;
+        }
+
+        .qty-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .qty-big-icon {
+            width: 72px;
+            height: 72px;
+            background: #141c2e;
+            border: 1px solid rgba(0, 210, 255, 0.25);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: var(--cyan);
+        }
+
+        .qty-item-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 0.5px;
+        }
+
+        .qty-unit {
+            font-family: "Share Tech Mono", monospace;
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+
+        .qty-unit b {
+            color: var(--gold);
+            font-weight: 400;
+        }
+
+        .qty-label {
+            font-family: "Share Tech Mono", monospace;
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .stepper {
+            display: grid;
+            grid-template-columns: 64px 1fr 64px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            background: #060910;
+            width: 100%;
+            height: 56px;
+        }
+
+        .step-btn {
+            background: transparent;
+            border: none;
+            color: var(--cyan);
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.16s;
+        }
+
+        .step-btn:hover {
+            background: rgba(0, 210, 255, 0.1);
+        }
+
+        .step-btn:active {
+            background: rgba(0, 210, 255, 0.2);
+        }
+
+        #qty-val {
+            width: 100%;
+            text-align: center;
+            font-family: "Share Tech Mono", monospace;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+            background: transparent;
+            border: none;
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            outline: none;
+            cursor: default;
+            -moz-appearance: textfield;
+        }
+
+        #qty-val::-webkit-inner-spin-button,
+        #qty-val::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+        }
+
+        .total-wrap {
+            text-align: center;
+        }
+
+        .total-label {
+            font-family: "Share Tech Mono", monospace;
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 3px;
+        }
+
+        #qty-total {
+            font-family: "Share Tech Mono", monospace;
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--gold);
+            letter-spacing: 1px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn-back {
+            flex: 1;
+            height: 48px;
+            background: rgba(255, 77, 109, 0.1);
+            border: 1px solid rgba(255, 77, 109, 0.3);
+            border-radius: 10px;
+            color: var(--red);
+            font-family: "Rajdhani", sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: background 0.18s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 77, 109, 0.2);
+        }
+
+        .btn-buy {
+            flex: 2;
+            height: 48px;
+            background: linear-gradient(135deg,
+                    rgba(0, 210, 255, 0.15),
+                    rgba(123, 47, 255, 0.12));
+            border: 1px solid rgba(0, 210, 255, 0.35);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: "Rajdhani", sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition:
+                background 0.18s,
+                border-color 0.18s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-buy:hover {
+            background: linear-gradient(135deg,
+                    rgba(0, 210, 255, 0.25),
+                    rgba(123, 47, 255, 0.2));
+            border-color: rgba(0, 210, 255, 0.6);
+        }
+
+        .btn-buy:active {
+            transform: scale(0.98);
+        }
+
+        #feedback {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex: 1;
+            padding: 40px;
+        }
+
+        #feedback.visible {
+            display: flex;
+        }
+
+        .fb-icon {
+            font-size: 52px;
+        }
+
+        .fb-text {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 2px;
+        }
+    </style>
 </head>
+
 <body>
-    <div id="vending-container">
-        <h1>Elige un producto</h1>
-        <div id="items-list"></div>
-        <button id="close-btn">Cerrar</button>
+    <div id="panel">
+        <div class="hdr">
+            <div class="hdr-left">
+                <div class="hdr-icon" id="hdr-icon">
+                    <i class="fa-solid fa-basket-shopping"></i>
+                </div>
+                <div>
+                    <div class="hdr-sup">MUHADDIL MACHINES</div>
+                    <div class="hdr-title" id="hdr-title">Vending Machine</div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px">
+                <div class="status">
+                    <div class="dot"></div>
+                    <span id="label-online">ONLINE</span>
+                </div>
+                <button class="close-btn" id="close-btn">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="info-bar" id="info-bar">
+            <div class="tag"><span id="label-items">ITEMS</span> <b id="item-count">0</b></div>
+            <div class="sep"></div>
+            <div class="tag" id="label-tap_to_select">TAP TO <b>SELECT</b></div>
+            <div class="sep"></div>
+            <div class="tag" id="label-cash_or_bank">CASH OR <b>BANK</b></div>
+        </div>
+
+        <div id="items"></div>
+
+        <div id="qty-screen">
+            <div class="qty-preview">
+                <div class="qty-big-icon" id="qty-icon">
+                    <i class="fa-solid fa-bottle-water"></i>
+                </div>
+                <div class="qty-item-name" id="qty-name">Item</div>
+                <div class="qty-unit"><span id="label-unit_price">UNIT PRICE: </span><b id="qty-unit-price">$0</b></div>
+            </div>
+
+            <div class="qty-label" id="label-select_quantity">SELECT QUANTITY</div>
+
+            <div class="stepper">
+                <button class="step-btn" id="btn-minus">
+                    <i class="fa-solid fa-minus"></i>
+                </button>
+                <input type="number" id="qty-val" value="1" readonly />
+                <button class="step-btn" id="btn-plus">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+
+            <div class="total-wrap">
+                <div class="total-label" id="label-total">TOTAL</div>
+                <div id="qty-total">$0</div>
+            </div>
+
+            <div class="actions">
+                <button class="btn-back" id="btn-back">
+                    <i class="fa-solid fa-arrow-left"></i> BACK
+                </button>
+                <button class="btn-buy" id="btn-buy">
+                    <i class="fa-solid fa-cart-shopping"></i> PURCHASE
+                </button>
+            </div>
+        </div>
+
+        <div id="feedback">
+            <div class="fb-icon" id="fb-icon">✓</div>
+            <div class="fb-text" id="fb-text">PURCHASED!</div>
+        </div>
+
+        <div class="footer">
+            <span id="label-esc_to_close">ESC TO CLOSE</span>
+            <span>v1.0.4</span>
+        </div>
     </div>
 
     <script>
-        window.addEventListener('message', function (event) {
-            var data = event.data;
+        var state = {
+            machine: null,
+            sourceType: "machine",
+            item: null,
+            qty: 1,
+            maxQty: 10,
+        };
 
-            if (data.action == 'open') {
-                document.getElementById('vending-container').style.display = 'block';
-                var itemsList = document.getElementById('items-list');
-                itemsList.innerHTML = '';
+        var panel = document.getElementById("panel");
+        var infoBar = document.getElementById("info-bar");
+        var itemsEl = document.getElementById("items");
+        var qtyScreen = document.getElementById("qty-screen");
+        var feedback = document.getElementById("feedback");
 
-                data.items.forEach(function (item) {
-                    var itemDiv = document.createElement('div');
-                    itemDiv.textContent = item.label + ' - $' + item.price;
-                    itemDiv.onclick = function () {
-                        fetch('https://muhaddil-machines/selectItem', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                itemName: item.name,
-                                itemPrice: item.price,
-                                machineName: data.machineName
-                            })
-                        }).then(res => res.json());
-                    };
-                    itemsList.appendChild(itemDiv);
-                });
-            } else if (data.action == 'close') {
-                document.getElementById('vending-container').style.display = 'none';
+        var typeCfg = {
+            machine: {
+                icon: "fa-solid fa-basket-shopping",
+                title: "Vending Machine",
+            },
+            stand: { icon: "fa-solid fa-store", title: "Food Stand" },
+            news: { icon: "fa-solid fa-newspaper", title: "News Vendor" },
+        };
+
+        function showList() {
+            itemsEl.style.display = "";
+            qtyScreen.classList.remove("visible");
+            feedback.classList.remove("visible");
+            infoBar.style.display = "";
+        }
+        function showQty() {
+            itemsEl.style.display = "none";
+            qtyScreen.classList.add("visible");
+            feedback.classList.remove("visible");
+            infoBar.style.display = "none";
+        }
+        function showFeedback(ok) {
+            itemsEl.style.display = "none";
+            qtyScreen.classList.remove("visible");
+            feedback.classList.add("visible");
+            infoBar.style.display = "none";
+            document.getElementById("fb-icon").textContent = ok ? "✓" : "✕";
+            document.getElementById("fb-icon").style.color = ok
+                ? "#06d6a0"
+                : "#ff4d6d";
+            document.getElementById("fb-text").textContent = ok
+                ? (state.locales && state.locales.purchased ? state.locales.purchased : "PURCHASED!")
+                : (state.locales && state.locales.failed ? state.locales.failed : "FAILED");
+        }
+
+        function openPanel(data) {
+            state.machine = data.machineName;
+            state.sourceType = data.sourceType || "machine";
+            state.maxQty = data.inputMaxValue || 10;
+            state.item = null;
+            state.qty = 1;
+
+            if (data.locales) {
+                state.locales = data.locales;
+
+                document.getElementById("label-items").innerHTML = state.locales.items || "ITEMS";
+                document.getElementById("label-tap_to_select").innerHTML = state.locales.tap_to_select || "TAP TO <b>SELECT</b>";
+                document.getElementById("label-cash_or_bank").innerHTML = state.locales.cash_or_bank || "CASH OR <b>BANK</b>";
+                document.getElementById("label-unit_price").innerHTML = state.locales.unit_price || "UNIT PRICE: ";
+                document.getElementById("label-select_quantity").innerHTML = state.locales.select_quantity || "SELECT QUANTITY";
+                document.getElementById("label-total").innerHTML = state.locales.total || "TOTAL";
+                document.getElementById("btn-back").innerHTML = state.locales.back || '<i class="fa-solid fa-arrow-left"></i> BACK';
+                document.getElementById("btn-buy").innerHTML = state.locales.purchase || '<i class="fa-solid fa-cart-shopping"></i> PURCHASE';
+                document.getElementById("label-esc_to_close").innerHTML = state.locales.esc_to_close || "ESC TO CLOSE";
+                document.getElementById("label-online").innerHTML = state.locales.online || "ONLINE";
+            } else {
+                state.locales = {};
             }
+
+            var cfg = typeCfg[state.sourceType] || typeCfg.machine;
+            document.getElementById("hdr-icon").innerHTML =
+                '<i class="' + cfg.icon + '"></i>';
+            document.getElementById("hdr-title").textContent =
+                data.title || cfg.title;
+            document.getElementById("item-count").textContent = (
+                data.items || []
+            ).length;
+
+            itemsEl.innerHTML = "";
+
+            if (!data.items || data.items.length === 0) {
+                var noItemsText = state.locales.no_items || "NO ITEMS AVAILABLE";
+                itemsEl.innerHTML =
+                    "<div style=\"padding:48px;text-align:center;color:rgba(180,210,240,.3);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;\">" + noItemsText + "</div>";
+            } else {
+                data.items.forEach(function (item, idx) {
+                    var label = (item.label || item.name)
+                        .replace(/\s*\(\$[^)]*\)/g, "")
+                        .replace(/\s*\(\$%price%\)/g, "")
+                        .trim();
+
+                    var tapToBuyText = state.locales.tap_to_buy || "TAP TO BUY";
+
+                    var card = document.createElement("div");
+                    card.className = "card";
+                    card.style.animationDelay = idx * 50 + "ms";
+                    card.innerHTML =
+                        '<div class="card-icon"><i class="' +
+                        (item.icon || "fa-solid fa-bottle-water") +
+                        '"></i></div>' +
+                        '<div class="card-info">' +
+                        '<div class="card-name">' +
+                        label +
+                        "</div>" +
+                        '<div class="card-sub">' + tapToBuyText + '</div>' +
+                        "</div>" +
+                        '<div class="card-price">$' +
+                        item.price +
+                        "</div>" +
+                        '<i class="fa-solid fa-chevron-right card-arrow"></i>';
+
+                    (function (i) {
+                        card.addEventListener("click", function () {
+                            openQty(i);
+                        });
+                    })(item);
+                    itemsEl.appendChild(card);
+                });
+            }
+
+            showList();
+
+            panel.classList.remove("visible");
+            void panel.offsetWidth;
+            panel.classList.add("visible");
+        }
+
+        function closePanel() {
+            panel.classList.remove("visible");
+            fetch("https://muhaddil-machines/close", { method: "POST" }).catch(
+                function () { },
+            );
+        }
+
+        function openQty(item) {
+            state.item = item;
+            state.qty = 1;
+
+            var label = (item.label || item.name)
+                .replace(/\s*\(\$[^)]*\)/g, "")
+                .replace(/\s*\(\$%price%\)/g, "")
+                .trim();
+
+            document.getElementById("qty-icon").innerHTML =
+                '<i class="' + (item.icon || "fa-solid fa-bottle-water") + '"></i>';
+            document.getElementById("qty-name").textContent = label;
+            document.getElementById("qty-unit-price").textContent =
+                "$" + item.price;
+            document.getElementById("qty-val").value = 1;
+            updateTotal();
+            showQty();
+        }
+
+        function updateTotal() {
+            if (!state.item) return;
+            document.getElementById("qty-total").textContent =
+                "$" + state.item.price * state.qty;
+        }
+
+        document
+            .getElementById("btn-minus")
+            .addEventListener("click", function () {
+                if (state.qty > 1) {
+                    state.qty--;
+                    document.getElementById("qty-val").value = state.qty;
+                    updateTotal();
+                }
+            });
+        document
+            .getElementById("btn-plus")
+            .addEventListener("click", function () {
+                if (state.qty < state.maxQty) {
+                    state.qty++;
+                    document.getElementById("qty-val").value = state.qty;
+                    updateTotal();
+                }
+            });
+
+        document.getElementById("btn-back").addEventListener("click", showList);
+
+        document.getElementById("btn-buy").addEventListener("click", function () {
+            if (!state.item || !state.machine) return;
+            fetch("https://muhaddil-machines/selectItem", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    itemName: state.item.name,
+                    itemPrice: state.item.price,
+                    machineName: state.machine,
+                    sourceType: state.sourceType,
+                    quantity: state.qty,
+                }),
+            }).catch(function () { });
+            showFeedback(true);
+            setTimeout(closePanel, 900);
         });
 
-        document.getElementById('close-btn').onclick = function () {
-            fetch('https://muhaddil-machines/close', {
-                method: 'POST',
-            });
-        };
+        document
+            .getElementById("close-btn")
+            .addEventListener("click", closePanel);
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") closePanel();
+        });
+
+        window.addEventListener("message", function (e) {
+            if (e.data.action === "open") openPanel(e.data);
+            if (e.data.action === "close") closePanel();
+        });
     </script>
 </body>
+
 </html>

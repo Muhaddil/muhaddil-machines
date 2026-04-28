@@ -55,6 +55,10 @@ Interact with news sellers to buy newspapers. The available items and their pric
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
+## Support
+
+Please join the [discord](https://discord.gg/T4VbEwJa8v) for support.
+
 <p>
   <img src="https://github.com/Muhaddil/muhaddil-machines/blob/main/preview/Machine2.png?raw=true" width="400" style="display:inline-block; margin-right: 10px;" />
   <img src="https://github.com/Muhaddil/muhaddil-machines/blob/main/preview/WaterCoolers.png?raw=true" width="400" style="display:inline-block;" />

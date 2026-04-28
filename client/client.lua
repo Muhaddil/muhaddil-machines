@@ -491,8 +491,104 @@ function setupTargeting()
     end
 end
 
+local spawnedNPCs = {} -- { propEntity = { ped = ped, npcData = npcData } }
+
+local hasActiveNPCs = false
+for _, data in pairs(Config.Stands) do
+    if data.npc and data.npc.active then
+        hasActiveNPCs = true
+        break
+    end
+end
+
+CreateThread(function()
+    if not hasActiveNPCs then return end
+
+    while true do
+        local playerCoords = GetEntityCoords(PlayerPedId())
+
+        for standName, data in pairs(Config.Stands) do
+            if data.npc and data.npc.active then
+                local modelHash = GetHashKey(data.model)
+                local obj = GetClosestObjectOfType(playerCoords.x, playerCoords.y, playerCoords.z, data.npc
+                .spawnDistance, modelHash, false, false, false)
+
+                if DoesEntityExist(obj) and not spawnedNPCs[obj] then
+                    local dist = #(playerCoords - GetEntityCoords(obj))
+                    if dist < data.npc.spawnDistance then
+                        SpawnNPCAtProp(obj, data.npc)
+                    end
+                end
+            end
+        end
+
+        for propEntity, entry in pairs(spawnedNPCs) do
+            if type(entry) ~= 'table' then
+                spawnedNPCs[propEntity] = nil
+            else
+                local dist = #(playerCoords - GetEntityCoords(propEntity))
+                if dist > entry.npcData.despawnDistance then
+                    if DoesEntityExist(entry.ped) then
+                        DeletePed(entry.ped)
+                        DebugPrint('NPC eliminado, distancia: ' .. tostring(dist))
+                    end
+                    spawnedNPCs[propEntity] = nil
+                end
+            end
+        end
+
+        Citizen.Wait(2000)
+    end
+end)
+
+function SpawnNPCAtProp(propEntity, npcData)
+    local npcModel = GetHashKey(npcData.model)
+
+    RequestModel(npcModel)
+    while not HasModelLoaded(npcModel) do
+        Citizen.Wait(0)
+    end
+
+    local propCoords = GetEntityCoords(propEntity)
+    local propHeading = GetEntityHeading(propEntity)
+    local offset = npcData.offset
+    local rad = math.rad(propHeading)
+    local nx = propCoords.x + offset.x * math.cos(rad) - offset.y * math.sin(rad)
+    local ny = propCoords.y + offset.x * math.sin(rad) + offset.y * math.cos(rad)
+    local nz = propCoords.z + offset.z
+
+    local ped = CreatePed(4, npcModel, nx, ny, nz, propHeading + npcData.heading_offset, false, true)
+
+    SetPedFleeAttributes(ped, 0, false)
+    SetBlockingOfNonTemporaryEvents(ped, true)
+    SetPedCanRagdoll(ped, false)
+    FreezeEntityPosition(ped, true)
+    SetEntityInvincible(ped, true)
+    SetPedDiesWhenInjured(ped, false)
+
+    local animDict = 'missfam5_yoga'
+    local animName = 'base_idle_b'
+    loadAnimDict(animDict)
+    TaskPlayAnim(ped, animDict, animName, 1.0, 1.0, -1, 1, 0, false, false, false)
+
+    SetModelAsNoLongerNeeded(npcModel)
+    spawnedNPCs[propEntity] = { ped = ped, npcData = npcData }
+    DebugPrint('NPC spawneado en stand: ' .. tostring(ped))
+end
+
 CreateThread(function()
     Wait(100)
     setupTargeting()
     WaterCoolerTarget()
+end)
+
+AddEventHandler('onResourceStop', function(resourceName)
+    if resourceName == GetCurrentResourceName() then
+        for _, entry in pairs(spawnedNPCs) do
+            local ped = type(entry) == 'table' and entry.ped or entry
+            if DoesEntityExist(ped) then
+                DeletePed(ped)
+            end
+        end
+    end
 end)

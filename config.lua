@@ -182,6 +182,14 @@ Config.WaterCoolers = { -- Water coolers
 Config.Stands = { -- Stands
     {
         model = 'prop_hotdogstand_01',
+        npc = {
+            active = true,
+            model = 's_m_m_strvend_01',
+            offset = { x = -0.4, y = 0.8, z = 0.0 }, -- x = left/right | y = forward/backward | z = up/down
+            heading_offset = 180.0,                  -- 0 = same direction as the prop | 180 = facing the prop
+            spawnDistance = 50.0,
+            despawnDistance = 60.0,                  -- Must be higher than spawnDistance
+        },
         items = {
             {
                 name = "hotdog_a",
@@ -205,6 +213,13 @@ Config.Stands = { -- Stands
     },
     {
         model = 'prop_burgerstand_01',
+        npc = {
+            model = 's_m_m_strvend_01',
+            offset = { x = -0.4, y = 1.0, z = 0.0 }, -- x = left/right | y = forward/backward | z = up/down
+            heading_offset = 180.0,                  -- 0 = same direction as the prop | 180 = facing the prop
+            spawnDistance = 50.0,
+            despawnDistance = 60.0,                  -- Must be higher than spawnDistance
+        },
         items = {
             {
                 name = "hamburger",
